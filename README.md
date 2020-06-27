@@ -1,7 +1,7 @@
 # Reverse-Shell-Generator
-A Reverse Shell Generator written in Bash that can generate msfvenom revshells, one liner revshells aswell as simple netcat listner reverse shell scripts.
-This is still work in progres.
-This script generates reverse shells according to the userinput from msfvenom, simple one liner reverse shells and from some other reverse shell scripts from various locations.
+A Reverse Shell Generator written in Bash that can generate different type of reverse shells according to the user input like msfvenom, one liner aswell as simple netcat listner reverse shell scripts.
+This script is still work in progres.
+
 
 # Requirements
 #### BASH | CURL | PERL | METASPLOIT
