@@ -74,16 +74,6 @@ type msfvenom >/dev/null 2>&1 || { echo >&2 metainstall ; }
 	metainstall() {	
 	read -p 'Do you want to install Metasploit? (y/n)' META
 	if [[ $META -eq "y" || $META -eq "Y" ]]; then
-		type git >/dev/null 2>&1 || { echo >&2 gitinstall ; }
-			gitinstall(){
-			read -p 'Do you want to install Git? (y/n)' CUR
-			if [[ $CUR -eq "y" || $CUR -eq "Y" ]]; then
-				sudo apt install git
-			else
-				exit
-			fi
-
-			}
 		type gem >/dev/null 2>&1 || { echo >&2 geminstall ; }
 			geminstall(){
 			read -p 'Do you want to install Git? (y/n)' CUR
