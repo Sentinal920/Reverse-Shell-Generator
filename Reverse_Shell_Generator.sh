@@ -56,6 +56,19 @@ type curl >/dev/null 2>&1 || { echo >&2 curlinstall ; }
 
 }
 
+type git >/dev/null 2>&1 || { echo >&2 gitinstall ; }
+	#Installing Git
+	gitinstall(){
+	read -p 'Do you want to install Git? (y/n)' CUR
+	if [[ $CUR -eq "y" || $CUR -eq "Y" ]]; then
+		sudo apt install git
+	else
+		exit
+	fi
+
+}
+
+
 type msfvenom >/dev/null 2>&1 || { echo >&2 metainstall ; }
 	#Installing Metasploit	
 	metainstall() {	
