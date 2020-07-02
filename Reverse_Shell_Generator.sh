@@ -76,7 +76,7 @@ type msfvenom >/dev/null 2>&1 || { echo >&2 metainstall ; }
 	if [[ $META -eq "y" || $META -eq "Y" ]]; then
 		type gem >/dev/null 2>&1 || { echo >&2 geminstall ; }
 			geminstall(){
-			read -p 'Do you want to install Git? (y/n)' CUR
+			read -p 'Do you want to install Gem? (y/n)' CUR
 			if [[ $CUR -eq "y" || $CUR -eq "Y" ]]; then
 				sudo apt install gem
 			else
