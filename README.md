@@ -4,7 +4,7 @@ This script is still work in progres.
 
 
 # Requirements
-#### BASH | CURL | PERL | METASPLOIT
+#### BASH | CURL | PERL | GIT | GEM | METASPLOIT
 
 If you don't have metasploit installed and don't want to generate msfvenom payloads then simply comment out the line starting with "type msfvenom.." to get the script working
 
